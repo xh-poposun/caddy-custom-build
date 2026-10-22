@@ -25,6 +25,7 @@ go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 "$(go env GOPATH)/bin/xcaddy" build "$CADDY_VERSION" \
   --with "github.com/mholt/caddy-l4@$L4_VERSION" \
   --with "github.com/caddyserver/jsonc-adapter@$JSONC_VERSION" \
+  --replace "golang.org/x/net=golang.org/x/net@v0.60.0" \
   --output "$ROOT/dist/caddy"
 
 "$ROOT/dist/caddy" version

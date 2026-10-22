@@ -1,0 +1,55 @@
+name: Check upstream versions
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Resolve latest upstream versions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          CADDY_VERSION="$(gh api repos/caddyserver/caddy/releases/latest --jq .tag_name)"
+          L4_VERSION="$(go list -m -f '{{.Version}}' github.com/mholt/caddy-l4@latest)"
+          JSONC_VERSION="$(go list -m -f '{{.Version}}' github.com/caddyserver/jsonc-adapter@latest)"
+          {
+            echo "CADDY_VERSION=$CADDY_VERSION"
+            echo "L4_VERSION=$L4_VERSION"
+            echo "JSONC_VERSION=$JSONC_VERSION"
+          } > versions.env
+          cat versions.env
+
+      - name: Create dependency update pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          commit-message: "build: update Caddy dependencies"
+          title: "build: update Caddy and plugin versions"
+          body: |
+            Automated upstream version check.
+            Review upstream release notes and caddy-l4 changes before merging.
+            PR checks must pass. This workflow does not publish or deploy automatically.
+          branch: automation/update-dependencies
+          delete-branch: true
+          add-paths: versions.env

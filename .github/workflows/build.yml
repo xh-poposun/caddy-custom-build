@@ -41,6 +41,10 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh
+      - name: Verify binary symbols
+        run: |
+          go version -m ./dist/caddy
+          go tool nm ./dist/caddy > /dev/null
 
       - name: Scan binary for known Go vulnerabilities
         run: |

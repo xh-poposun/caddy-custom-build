@@ -22,6 +22,7 @@ done
 mkdir -p dist
 export CGO_ENABLED=0
 go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+XCADDY_GO_BUILD_FLAGS="-trimpath -tags=nobadger,nomysql,nopgx" \
 "$(go env GOPATH)/bin/xcaddy" build "$CADDY_VERSION" \
   --with "github.com/mholt/caddy-l4@$L4_VERSION" \
   --with "github.com/caddyserver/jsonc-adapter@$JSONC_VERSION" \
